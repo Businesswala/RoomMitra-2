@@ -9,6 +9,8 @@ on:
 jobs:
   flutter-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout Code
@@ -39,3 +41,16 @@ jobs:
       run: |
         cd flutter-frontend
         flutter test
+
+    - name: Debug Failure
+      if: failure()
+      run: |
+        cd flutter-frontend
+        flutter analyze > ../flutter_error.log 2>&1 || true
+        cd ..
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git add flutter_error.log
+        git commit -m "Capture Flutter CI error log [skip ci]" || true
+        git push origin main || true
+

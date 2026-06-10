@@ -9,6 +9,8 @@ on:
 jobs:
   laravel-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout Code
@@ -41,3 +43,16 @@ jobs:
       run: |
         cd laravel-backend
         php artisan test
+
+    - name: Debug Failure
+      if: failure()
+      run: |
+        cd laravel-backend
+        php artisan key:generate > ../laravel_error.log 2>&1 || true
+        cd ..
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git add laravel_error.log
+        git commit -m "Capture Laravel CI error log [skip ci]" || true
+        git push origin main || true
+
