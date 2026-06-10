@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # Laravel App Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: roommitra-app
+    restart: unless-stopped
+    volumes:
+      - .:/var/www
+    networks:
+      - roommitra-network
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+
+  # Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: roommitra-webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/laravel.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - roommitra-network
+
+  # Database Service
+  db:
+    image: mysql:8.0
+    container_name: roommitra-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: roommitra
+      MYSQL_ROOT_PASSWORD: root_secure_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-db-data:/var/lib/mysql
+    networks:
+      - roommitra-network
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: roommitra-redis
+    restart: unless-stopped
+    volumes:
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis-cache-data:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - roommitra-network
+
+  # Queue Worker Service
+  queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: roommitra-queue-worker
+    restart: unless-stopped
+    volumes:
+      - .:/var/www
+      - ./docker/supervisor/supervisord.conf:/etc/supervisord.conf
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+    depends_on:
+      - redis
+      - db
+    networks:
+      - roommitra-network
+
+  # Reverb WebSocket Service
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: roommitra-reverb
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    depends_on:
+      - redis
+    networks:
+      - roommitra-network
+
+networks:
+  roommitra-network:
+    driver: bridge
+
+volumes:
+  mysql-db-data:
+    driver: local
+  redis-cache-data:
+    driver: local

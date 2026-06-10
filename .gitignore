@@ -1,0 +1,26 @@
+# Laravel specific
+laravel-backend/.env
+laravel-backend/bootstrap/cache/*
+laravel-backend/storage/*.key
+laravel-backend/storage/logs/*.log
+laravel-backend/storage/app/public/*
+laravel-backend/vendor/
+
+# Flutter specific
+flutter-frontend/.dart_tool/
+flutter-frontend/.flutter-plugins
+flutter-frontend/.flutter-plugins-dependencies
+flutter-frontend/.packages
+flutter-frontend/build/
+flutter-frontend/ios/Flutter/Flutter.podspec
+flutter-frontend/ios/Flutter/Generated.xcconfig
+flutter-frontend/android/key.properties
+flutter-frontend/android/local.properties
+
+# General
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+npm-debug.log
+yarn-error.log
