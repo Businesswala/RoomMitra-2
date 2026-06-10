@@ -3,12 +3,8 @@ name: Flutter CI
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'flutter-frontend/**'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'flutter-frontend/**'
 
 jobs:
   flutter-tests:
